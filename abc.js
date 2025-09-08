@@ -1,3 +1,9 @@
+const fs = require('fs');
+
+// Load JSON from file
+const rawData = fs.readFileSync('shares.json');
+const allData = JSON.parse(rawData);
+
 // Helper: Convert very large value from given base string to BigInt decimal
 function parseValueBigInt(base, value) {
   const digits = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -7,9 +13,7 @@ function parseValueBigInt(base, value) {
 
   for (let char of value) {
     const digit = BigInt(digits.indexOf(char));
-    if (digit < 0n) {
-      throw new Error(`Invalid digit '${char}' for base ${base}`);
-    }
+    if (digit < 0n) throw new Error(`Invalid digit '${char}' for base ${base}`);
     result = result * bigBase + digit;
   }
   return result;
@@ -55,34 +59,6 @@ function lagrangeInterpolateBigInt(xPoints, yPoints, targetX, primeMod) {
 }
 
 // ==============================
-// Hardcoded Testcases
-// ==============================
-
-// SAMPLE TESTCASE
-const sampleData = {
-  keys: { n: 4, k: 3 },
-  "1": { base: "10", value: "4" },
-  "2": { base: "2", value: "111" },
-  "3": { base: "10", value: "12" },
-  "6": { base: "4", value: "213" }
-};
-
-// SECOND TESTCASE
-const secondData = {
-  keys: { n: 10, k: 7 },
-  "1": { base: "6", value: "13444211440455345511" },
-  "2": { base: "15", value: "aed7015a346d635" },
-  "3": { base: "15", value: "6aeeb69631c227c" },
-  "4": { base: "16", value: "e1b5e05623d881f" },
-  "5": { base: "8", value: "316034514573652620673" },
-  "6": { base: "3", value: "2122212201122002221120200210011020220200" },
-  "7": { base: "3", value: "20120221122211000100210021102001201112121" },
-  "8": { base: "6", value: "20220554335330240002224253" },
-  "9": { base: "12", value: "45153788322a1255483" },
-  "10": { base: "7", value: "1101613130313526312514143" }
-};
-
-// ==============================
 // Main: recover secret
 // ==============================
 function recoverSecret(data) {
@@ -104,9 +80,7 @@ function recoverSecret(data) {
     yPoints.push(parseValueBigInt(base, value));
   });
 
-  // Use a very large prime modulus
   const PRIME = 2n ** 521n - 1n;
-
   const recoveredC = lagrangeInterpolateBigInt(xPoints, yPoints, 0, PRIME);
 
   console.log("=================================");
@@ -118,7 +92,7 @@ function recoverSecret(data) {
 
 // Run for both
 console.log(">>> SAMPLE TESTCASE <<<");
-recoverSecret(sampleData);
+recoverSecret(allData.sampleData);
 
 console.log("\n>>> SECOND TESTCASE <<<");
-recoverSecret(secondData);
+recoverSecret(allData.secondData);
